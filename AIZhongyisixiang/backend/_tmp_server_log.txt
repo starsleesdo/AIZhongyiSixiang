@@ -1,0 +1,17 @@
+AI TCM backend listening on http://127.0.0.1:3021
+node:_http_outgoing:570
+    validateHeaderValue(key, value);
+    ^
+
+TypeError [ERR_INVALID_CHAR]: Invalid character in header content ["Location"]
+    at storeHeader (node:_http_outgoing:570:5)
+    at processHeader (node:_http_outgoing:565:3)
+    at ServerResponse._storeHeader (node:_http_outgoing:434:11)
+    at ServerResponse.writeHead (node:_http_server:441:8)
+    at redirect (D:\code\AIZhongyisixiang\backend\server.js:256:7)
+    at Server.<anonymous> (D:\code\AIZhongyisixiang\backend\server.js:633:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  code: 'ERR_INVALID_CHAR'
+}
+
+Node.js v24.14.0

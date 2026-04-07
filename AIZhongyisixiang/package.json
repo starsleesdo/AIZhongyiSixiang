@@ -1,0 +1,10 @@
+{
+  "name": "ai-zhongyi-sixiang",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI中医四象合参 uni-app + Node backend",
+  "scripts": {
+    "backend": "node backend/server.js",
+    "backend:3010": "set PORT=3010&& node backend/server.js"
+  }
+}

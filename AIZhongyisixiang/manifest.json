@@ -1,0 +1,14 @@
+{
+    "name" : "AI中医四象合参",
+    "appid" : "__UNI__1068448",
+    "description" : "基于 uni-app 的 AI 中医舌诊、问诊、脉诊、五运六气合参应用",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "app-plus" : {
+        "usingComponents" : true
+    },
+    "h5" : {
+        "title" : "AI中医四象合参"
+    }
+}
