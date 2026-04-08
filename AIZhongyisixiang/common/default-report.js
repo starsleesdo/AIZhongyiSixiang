@@ -1,3 +1,7 @@
+import { buildInquirySummary, getDefaultInquiryAnswers } from "./inquiry-schema";
+
+const DEFAULT_INQUIRY_ANSWERS = getDefaultInquiryAnswers();
+
 export function getDefaultReport() {
   return {
     id: "RPT-DEMO-20260315",
@@ -16,7 +20,7 @@ export function getDefaultReport() {
       mainType: "阳虚质",
       secondType: "兼气虚质",
       conclusion:
-        "元气不足，畏寒怕冷，手足不温，喜热饮食，精力不振，舌淡胖嫩，脉沉迟。",
+        "元气不足，畏寒怕冷，手足不温，喜热饮食，精力不足，舌淡胖嫩，脉沉迟。",
       bars: [
         { label: "阳虚质", value: 85, highlight: true },
         { label: "气虚质", value: 75 },
@@ -31,30 +35,51 @@ export function getDefaultReport() {
     },
     tongue: {
       summary: "舌色偏淡白，苔白稍厚，提示气血不足兼有脾胃运化偏弱。",
-      findings: ["舌色偏淡白，提示气血不足", "舌边轻齿痕，提示脾虚", "苔白稍厚，提示寒湿偏盛"]
+      faceImage: "",
+      underImage: "",
+      analysis: "",
+      traits: {
+        color: "",
+        thickness: "",
+        moisture: "",
+        yellowGreasy: false,
+        dryCracked: false,
+        toothMarks: false,
+        swollen: false
+      },
+      findings: [
+        "舌色偏淡白，提示气血不足",
+        "舌边轻齿痕，提示脾虚",
+        "苔白稍厚，提示寒湿偏重"
+      ]
     },
     inquiry: {
-      summary: "易疲劳、晨起精神不足，偶有腹胀，睡眠偏浅。"
+      answers: { ...DEFAULT_INQUIRY_ANSWERS },
+      summary: buildInquirySummary(DEFAULT_INQUIRY_ANSWERS)
     },
     pulse: {
-      summary: "暂未接入脉诊设备，可通过问卷和可穿戴设备做替代评估。"
+      summary: "暂未接入脉诊设备，可通过问卷和可穿戴设备做替代评估。",
+      frequency: 72,
+      pressureSignal: "",
+      types: [],
+      analysis: ""
     },
     climate: {
-      summary: "当前春季木旺，肝气偏升，建议调畅情志、早睡早起、避免寒凉。"
+      birthYear: "",
+      birthMonth: "",
+      birthDay: "",
+      birthHour: "",
+      analysis: "",
+      summary: "当前春季木旺，肝气偏升，建议调畅情志、早睡早起，避免寒凉。"
     },
     risk: {
       level: "中等风险",
-      items: [
-        "免疫力波动风险",
-        "消化功能紊乱风险",
-        "季节交替时疲劳加重风险"
-      ]
+      items: ["免疫力波动风险", "消化功能紊乱风险", "季节交替时疲劳加重风险"]
     },
     plan: {
       diet: "多用温补脾阳食材，如山药、红枣、生姜羊肉汤，少生冷。",
       routine: "建议 23:00 前入睡，每周 3 次中低强度运动，重在持续。",
-      medicine:
-        "可在中医师辨证后参考四君子汤类思路调理，不建议自行长期服药。"
+      medicine: "可在中医师辨证后参考四君子汤类思路调理，不建议自行长期服药。"
     }
   };
 }

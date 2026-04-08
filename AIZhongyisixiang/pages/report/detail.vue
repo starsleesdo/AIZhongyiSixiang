@@ -3,7 +3,7 @@
     <view class="nav">
       <text class="back" @click="goBack">返回</text>
       <text class="title">测评详情</text>
-      <text class="placeholder">  </text>
+      <text class="export-nav" @click="exportPdf">{{ exportingPdf ? "导出中" : "导出PDF" }}</text>
     </view>
 
     <view class="hero">
@@ -25,6 +25,10 @@
         </view>
       </view>
     </view>
+
+    <button class="export-btn" :loading="exportingPdf" @click="exportPdf">
+      {{ exportingPdf ? "正在导出..." : "下载PDF到本地" }}
+    </button>
 
     <scroll-view class="section-tabs" scroll-x>
       <view
@@ -68,35 +72,62 @@
       <text class="paragraph">{{ report.tongue.summary }}</text>
       <view class="tongue-row">
         <view class="tongue-item">
-          <view class="tongue-placeholder">舌面图像</view>
+          <image
+            v-if="report.tongue.faceImage"
+            class="tongue-image"
+            :src="report.tongue.faceImage"
+            mode="aspectFill"
+          />
+          <view v-else class="tongue-placeholder">舌面图像</view>
           <text class="tongue-label">舌面</text>
         </view>
         <view class="tongue-item">
-          <view class="tongue-placeholder">舌下图像</view>
+          <image
+            v-if="report.tongue.underImage"
+            class="tongue-image"
+            :src="report.tongue.underImage"
+            mode="aspectFill"
+          />
+          <view v-else class="tongue-placeholder">舌下图像</view>
           <text class="tongue-label">舌下</text>
         </view>
       </view>
       <view class="warn-box">
-        <text class="warn-title">异常项目</text>
-        <text v-for="(item, idx) in report.tongue.findings" :key="idx" class="warn-item">
-          • {{ item }}
-        </text>
+        <text class="warn-title">舌诊分析</text>
+        <text class="analysis-text">{{ report.tongue.analysis }}</text>
       </view>
     </view>
 
     <view class="content card" v-if="activeSection === 'pulse'">
       <text class="content-title">脉诊分析</text>
       <text class="paragraph">{{ report.pulse.summary }}</text>
+      <view class="warn-box">
+        <text class="warn-title">脉诊结果</text>
+        <text class="analysis-text">{{ report.pulse.analysis }}</text>
+      </view>
     </view>
 
     <view class="content card" v-if="activeSection === 'inquiry'">
       <text class="content-title">问诊分析</text>
-      <text class="paragraph">{{ report.inquiry.summary }}</text>
+      <view class="inquiry-list">
+        <view v-for="item in inquiryItems" :key="item.key" class="inquiry-row">
+          <text class="inquiry-label">{{ item.title }}</text>
+          <text class="inquiry-answer">{{ item.answer }}</text>
+        </view>
+      </view>
+      <view class="warn-box">
+        <text class="warn-title">问诊总结</text>
+        <text class="analysis-text">{{ report.inquiry.summary }}</text>
+      </view>
     </view>
 
     <view class="content card" v-if="activeSection === 'climate'">
       <text class="content-title">五运六气分析</text>
       <text class="paragraph">{{ report.climate.summary }}</text>
+      <view class="warn-box">
+        <text class="warn-title">岁运解读结果</text>
+        <text class="analysis-text">{{ report.climate.analysis }}</text>
+      </view>
     </view>
 
     <view class="content card" v-if="activeSection === 'risk'">
@@ -113,11 +144,22 @@
       <text class="plan-item">作息建议：{{ report.plan.routine }}</text>
       <text class="plan-item">方药建议：{{ report.plan.medicine }}</text>
     </view>
+
+    <canvas canvas-id="pdfCanvas" class="pdf-canvas" />
   </view>
 </template>
 
 <script>
+import { PDFDocument } from "pdf-lib";
 import { getLatestReport, getReportById } from "../../common/report-store";
+import { buildTongueAnalysis } from "../../common/tongue-analysis";
+import { buildPulseAnalysis, parsePressureSignal } from "../../common/pulse-analysis";
+import { buildWuYunLiuQiAnalysis } from "../../common/wuyunliuqi-analysis";
+import {
+  buildInquiryDisplayItems,
+  buildInquirySummary,
+  normalizeInquiryAnswers
+} from "../../common/inquiry-schema";
 
 export default {
   data() {
@@ -132,12 +174,22 @@ export default {
         { key: "plan", label: "调理方案" },
         { key: "constitution", label: "健康总览" }
       ],
-      report: getLatestReport()
+      report: getLatestReport(),
+      exportingPdf: false
     };
+  },
+  computed: {
+    inquiryItems() {
+      return buildInquiryDisplayItems((this.report.inquiry && this.report.inquiry.answers) || {});
+    }
   },
   onLoad(query) {
     const id = query && query.id;
     this.report = getReportById(id) || getLatestReport();
+    this.ensureInquiryData();
+    this.ensureTongueAnalysis();
+    this.ensurePulseAnalysis();
+    this.ensureClimateAnalysis();
   },
   methods: {
     goBack() {
@@ -145,6 +197,373 @@ export default {
     },
     goSettings() {
       uni.navigateTo({ url: "/pages/settings/index" });
+    },
+    ensureInquiryData() {
+      if (!this.report.inquiry) {
+        this.$set(this.report, "inquiry", {});
+      }
+      const answers = normalizeInquiryAnswers(this.report.inquiry.answers || {});
+      this.$set(this.report.inquiry, "answers", answers);
+      this.$set(this.report.inquiry, "summary", buildInquirySummary(answers));
+    },
+    ensureTongueAnalysis() {
+      if (!this.report) return;
+      if (!this.report.tongue) {
+        this.$set(this.report, "tongue", {});
+      }
+      const result = buildTongueAnalysis(this.report.tongue);
+      this.$set(this.report.tongue, "traits", result.traits);
+      this.$set(this.report.tongue, "analysis", result.text);
+    },
+    ensurePulseAnalysis() {
+      if (!this.report) return;
+      if (!this.report.pulse) {
+        this.$set(this.report, "pulse", {});
+      }
+      const frequency = this.report.pulse.frequency;
+      const signal = parsePressureSignal(this.report.pulse.pressureSignal);
+      const result = buildPulseAnalysis({
+        frequency,
+        pressureSignal: signal
+      });
+      const safeFrequency = Number.isFinite(Number(frequency)) ? Number(frequency) : null;
+      const summaryFrequency = safeFrequency == null ? "未填写" : `${String(safeFrequency)} 次/分钟`;
+      this.$set(this.report.pulse, "types", result.types);
+      this.$set(this.report.pulse, "analysis", result.text);
+      this.$set(
+        this.report.pulse,
+        "summary",
+        "已分析脉搏频率：" +
+          summaryFrequency +
+          "；判定脉象：" +
+          (result.types.length ? result.types.join("、") : "平脉") +
+          "。"
+      );
+    },
+    ensureClimateAnalysis() {
+      if (!this.report) return;
+      if (!this.report.climate) {
+        this.$set(this.report, "climate", {});
+      }
+      const hasAnalysis = Boolean(this.report.climate.analysis && String(this.report.climate.analysis).trim());
+      if (
+        !hasAnalysis &&
+        this.report.climate.birthYear &&
+        this.report.climate.birthMonth &&
+        this.report.climate.birthDay &&
+        this.report.climate.birthHour
+      ) {
+        const result = buildWuYunLiuQiAnalysis({
+          birthYear: this.report.climate.birthYear,
+          birthMonth: this.report.climate.birthMonth,
+          birthDay: this.report.climate.birthDay,
+          birthHour: this.report.climate.birthHour
+        });
+        if (result.ok) {
+          this.$set(this.report.climate, "analysis", result.text);
+          if (!this.report.climate.summary) {
+            this.$set(this.report.climate, "summary", `当前${result.currentYear}年，已生成五运六气提醒。`);
+          }
+        }
+      }
+    },
+    wrapCanvasText(ctx, text, maxWidth) {
+      const content = String(text || "");
+      if (!content) return [""];
+      const lines = [];
+      let current = "";
+      const chars = Array.from(content);
+      chars.forEach((char) => {
+        const next = current + char;
+        if (ctx.measureText(next).width > maxWidth && current) {
+          lines.push(current);
+          current = char;
+        } else {
+          current = next;
+        }
+      });
+      if (current) lines.push(current);
+      return lines.length ? lines : [""];
+    },
+    drawCanvasAsync(ctx) {
+      return new Promise((resolve) => {
+        ctx.draw(false, () => resolve());
+      });
+    },
+    canvasToJpg(width, height) {
+      return new Promise((resolve, reject) => {
+        uni.canvasToTempFilePath(
+          {
+            canvasId: "pdfCanvas",
+            fileType: "jpg",
+            quality: 0.95,
+            width,
+            height,
+            destWidth: width,
+            destHeight: height,
+            success: (res) => resolve(res.tempFilePath),
+            fail: reject
+          },
+          this
+        );
+      });
+    },
+    getImageInfoSafe(src) {
+      return new Promise((resolve) => {
+        if (!src) {
+          resolve(null);
+          return;
+        }
+        uni.getImageInfo({
+          src,
+          success: (res) => resolve(res),
+          fail: () => resolve(null)
+        });
+      });
+    },
+    async renderSectionToImage(section) {
+      const width = 1120;
+      const estimatedHeight = Math.max(
+        1300,
+        Math.min(2600, 320 + section.lines.length * 44 + (section.images || []).length * 520)
+      );
+      const height = estimatedHeight;
+      const maxTextWidth = width - 120;
+      const ctx = uni.createCanvasContext("pdfCanvas", this);
+
+      ctx.setFillStyle("#ffffff");
+      ctx.fillRect(0, 0, width, height);
+      let y = 90;
+
+      ctx.setFillStyle("#7c4dff");
+      ctx.setFontSize(40);
+      ctx.fillText("AI中医四象合参报告", 60, y);
+      y += 60;
+
+      ctx.setFillStyle("#555");
+      ctx.setFontSize(24);
+      ctx.fillText(`报告编号：${this.report.id}`, 60, y);
+      y += 40;
+      ctx.fillText(`导出时间：${new Date().toLocaleString()}`, 60, y);
+      y += 60;
+
+      ctx.setFillStyle("#1f2a1e");
+      ctx.setFontSize(34);
+      ctx.fillText(section.title, 60, y);
+      y += 52;
+
+      ctx.setFillStyle("#3f4a40");
+      ctx.setFontSize(26);
+      section.lines.forEach((line) => {
+        const wrapped = this.wrapCanvasText(ctx, line, maxTextWidth);
+        wrapped.forEach((row) => {
+          ctx.fillText(row, 60, y);
+          y += 38;
+        });
+        y += 8;
+      });
+
+      for (let i = 0; i < (section.images || []).length; i += 1) {
+        const imageItem = section.images[i];
+        const imageInfo = await this.getImageInfoSafe(imageItem.src);
+        ctx.setFillStyle("#666");
+        ctx.setFontSize(24);
+        ctx.fillText(imageItem.label, 60, y);
+        y += 34;
+        if (!imageInfo) {
+          ctx.setFillStyle("#b3261e");
+          ctx.fillText("图片加载失败", 60, y);
+          y += 42;
+          continue;
+        }
+        const maxImageWidth = width - 140;
+        const maxImageHeight = 420;
+        const ratio = Math.min(maxImageWidth / imageInfo.width, maxImageHeight / imageInfo.height);
+        const drawW = Math.round(imageInfo.width * ratio);
+        const drawH = Math.round(imageInfo.height * ratio);
+        ctx.drawImage(imageItem.src, 60, y, drawW, drawH);
+        y += drawH + 24;
+      }
+
+      await this.drawCanvasAsync(ctx);
+      return this.canvasToJpg(width, height);
+    },
+    buildExportSections() {
+      const inquiryLines = this.inquiryItems.map((item) => `${item.title}：${item.answer}`);
+      const bars = (this.report.constitution && this.report.constitution.bars) || [];
+      const tongueImages = [];
+      if (this.report.tongue && this.report.tongue.faceImage) {
+        tongueImages.push({ label: "舌面图像", src: this.report.tongue.faceImage });
+      }
+      if (this.report.tongue && this.report.tongue.underImage) {
+        tongueImages.push({ label: "舌下图像", src: this.report.tongue.underImage });
+      }
+
+      return [
+        {
+          title: "基础信息",
+          lines: [
+            `姓名：${this.report.userName}`,
+            `性别/年龄：${this.report.gender} / ${this.report.age}岁`,
+            `测评日期：${this.report.createdAt}`,
+            `综合评分：${this.report.score}`
+          ],
+          images: []
+        },
+        {
+          title: "健康总览",
+          lines: [
+            `主要体质：${this.report.constitution.mainType}`,
+            `兼夹体质：${this.report.constitution.secondType}`,
+            `结论：${this.report.constitution.conclusion}`,
+            ...bars.map((item) => `${item.label}：${item.value}%`)
+          ],
+          images: []
+        },
+        {
+          title: "舌诊",
+          lines: [
+            `概述：${this.report.tongue.summary}`,
+            "分析结果：",
+            ...String(this.report.tongue.analysis || "").split("\n").filter(Boolean)
+          ],
+          images: tongueImages
+        },
+        {
+          title: "脉诊",
+          lines: [
+            `概述：${this.report.pulse.summary}`,
+            "分析结果：",
+            ...String(this.report.pulse.analysis || "").split("\n").filter(Boolean)
+          ],
+          images: []
+        },
+        {
+          title: "问诊",
+          lines: [...inquiryLines, `总结：${this.report.inquiry.summary}`],
+          images: []
+        },
+        {
+          title: "五运六气",
+          lines: [
+            `概述：${this.report.climate.summary}`,
+            ...String(this.report.climate.analysis || "").split("\n").filter(Boolean)
+          ],
+          images: []
+        },
+        {
+          title: "风险评估与调理方案",
+          lines: [
+            `风险等级：${this.report.risk.level}`,
+            ...((this.report.risk && this.report.risk.items) || []).map((item) => `- ${item}`),
+            `饮食建议：${this.report.plan.diet}`,
+            `作息建议：${this.report.plan.routine}`,
+            `方药建议：${this.report.plan.medicine}`
+          ],
+          images: []
+        }
+      ];
+    },
+    readFileAsBase64(path) {
+      return new Promise((resolve, reject) => {
+        plus.io.resolveLocalFileSystemURL(
+          path,
+          (entry) => {
+            entry.file(
+              (file) => {
+                const reader = new plus.io.FileReader();
+                reader.onloadend = (event) => {
+                  const dataUrl = String((event && event.target && event.target.result) || "");
+                  const idx = dataUrl.indexOf(",");
+                  resolve(idx >= 0 ? dataUrl.slice(idx + 1) : dataUrl);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              },
+              reject
+            );
+          },
+          reject
+        );
+      });
+    },
+    savePdfBytesToLocal(pdfBytes) {
+      const fileName = `健康测评报告-${this.report.id || Date.now()}.pdf`;
+      return new Promise((resolve, reject) => {
+        plus.io.resolveLocalFileSystemURL(
+          "_doc/",
+          (dirEntry) => {
+            dirEntry.getFile(
+              fileName,
+              { create: true },
+              (fileEntry) => {
+                fileEntry.createWriter(
+                  (writer) => {
+                    writer.onwrite = () => resolve(fileEntry.toLocalURL());
+                    writer.onerror = reject;
+                    writer.write(new Blob([pdfBytes], { type: "application/pdf" }));
+                  },
+                  reject
+                );
+              },
+              reject
+            );
+          },
+          reject
+        );
+      });
+    },
+    async exportPdf() {
+      if (this.exportingPdf) return;
+      if (typeof plus === "undefined") {
+        uni.showToast({ title: "仅APP端支持导出PDF", icon: "none" });
+        return;
+      }
+      this.exportingPdf = true;
+      try {
+        const sections = this.buildExportSections();
+        const imagePaths = [];
+        for (let i = 0; i < sections.length; i += 1) {
+          const path = await this.renderSectionToImage(sections[i]);
+          imagePaths.push(path);
+        }
+
+        const pdfDoc = await PDFDocument.create();
+        for (let i = 0; i < imagePaths.length; i += 1) {
+          const base64 = await this.readFileAsBase64(imagePaths[i]);
+          const jpgImage = await pdfDoc.embedJpg(base64);
+          const page = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+          page.drawImage(jpgImage, {
+            x: 0,
+            y: 0,
+            width: jpgImage.width,
+            height: jpgImage.height
+          });
+        }
+        const pdfBytes = await pdfDoc.save();
+        const savedPath = await this.savePdfBytesToLocal(pdfBytes);
+
+        uni.showModal({
+          title: "导出成功",
+          content: `已保存到本地：${savedPath}`,
+          showCancel: false
+        });
+
+        if (plus.runtime && plus.runtime.openFile) {
+          const openPath =
+            String(savedPath).indexOf("_doc/") === 0
+              ? plus.io.convertLocalFileSystemURL(savedPath)
+              : savedPath;
+          plus.runtime.openFile(openPath);
+        }
+      } catch (error) {
+        uni.showToast({
+          title: (error && error.message) || "导出失败",
+          icon: "none"
+        });
+      } finally {
+        this.exportingPdf = false;
+      }
     }
   }
 };
@@ -152,7 +571,7 @@ export default {
 
 <style lang="scss" scoped>
 .page {
-  background: #f4f5f2;
+  background: #fff9e8;
   min-height: 100vh;
   padding-bottom: 36rpx;
 }
@@ -178,12 +597,15 @@ export default {
   font-weight: 700;
 }
 
-.placeholder {
-  width: 70rpx;
+.export-nav {
+  min-width: 110rpx;
+  text-align: right;
+  font-size: 24rpx;
+  color: #7c4dff;
 }
 
 .hero {
-  background: radial-gradient(circle at 80% 0%, #3f8c5c, #245d40);
+  background: radial-gradient(circle at 80% 0%, #8b6bff, #5b33cc);
   padding: 24rpx;
   color: #fff;
 }
@@ -243,10 +665,21 @@ export default {
   font-size: 22rpx;
 }
 
+.export-btn {
+  margin: 16rpx 18rpx 0;
+  background: #7c4dff;
+  color: #fff;
+  border-radius: 12rpx;
+  height: 78rpx;
+  line-height: 78rpx;
+  font-size: 28rpx;
+}
+
 .section-tabs {
   white-space: nowrap;
   background: #fff;
-  border-bottom: 1px solid #eef0ec;
+  border-bottom: 1px solid #eadbff;
+  margin-top: 16rpx;
 }
 
 .tab-item {
@@ -257,9 +690,9 @@ export default {
 }
 
 .active {
-  color: #23573a;
+  color: #5b33cc;
   font-weight: 700;
-  border-bottom: 4rpx solid #2c7148;
+  border-bottom: 4rpx solid #7c4dff;
 }
 
 .card {
@@ -287,13 +720,13 @@ export default {
 .sub-type {
   font-size: 46rpx;
   font-weight: 700;
-  color: #2b633e;
+  color: #5b33cc;
 }
 
 .tag {
   font-size: 22rpx;
   color: #7b7f74;
-  background: #f1f3ed;
+  background: #fff3c9;
   border-radius: 10rpx;
   padding: 6rpx 12rpx;
 }
@@ -329,18 +762,18 @@ export default {
   flex: 1;
   height: 20rpx;
   border-radius: 999rpx;
-  background: #edf1ec;
+  background: #f1e8ff;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
   border-radius: 999rpx;
-  background: #2c7148;
+  background: #7c4dff;
 }
 
 .bar-fill.gold {
-  background: #d2b271;
+  background: #ffe3a0;
 }
 
 .bar-value {
@@ -361,8 +794,15 @@ export default {
   text-align: center;
 }
 
+.tongue-image {
+  width: 100%;
+  height: 320rpx;
+  border-radius: 18rpx;
+  display: block;
+}
+
 .tongue-placeholder {
-  height: 220rpx;
+  height: 320rpx;
   border-radius: 18rpx;
   background: linear-gradient(150deg, #f2d0d0, #e6b4b4);
   color: #8f4c4c;
@@ -376,6 +816,35 @@ export default {
   margin-top: 8rpx;
   display: block;
   color: #676f67;
+  font-size: 24rpx;
+}
+
+.inquiry-list {
+  margin-top: 14rpx;
+  border: 1px solid #eadbff;
+  border-radius: 14rpx;
+  overflow: hidden;
+}
+
+.inquiry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 18rpx;
+  border-bottom: 1px solid #f0e8ff;
+}
+
+.inquiry-row:last-child {
+  border-bottom: none;
+}
+
+.inquiry-label {
+  color: #485348;
+  font-size: 24rpx;
+}
+
+.inquiry-answer {
+  color: #5b33cc;
   font-size: 24rpx;
 }
 
@@ -393,7 +862,6 @@ export default {
   font-weight: 700;
 }
 
-.warn-item,
 .risk-item,
 .plan-item {
   display: block;
@@ -403,10 +871,28 @@ export default {
   line-height: 1.7;
 }
 
+.analysis-text {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  color: #424b43;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
 .risk-level {
   margin-top: 14rpx;
-  color: #2c7148;
+  color: #7c4dff;
   font-size: 34rpx;
   font-weight: 700;
+}
+
+.pdf-canvas {
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+  width: 1120px;
+  height: 2600px;
+  opacity: 0;
 }
 </style>

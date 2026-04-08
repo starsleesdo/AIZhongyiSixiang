@@ -6,5 +6,8 @@
   "scripts": {
     "backend": "node backend/server.js",
     "backend:3010": "set PORT=3010&& node backend/server.js"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
   }
 }

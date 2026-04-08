@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="card">
       <text class="title">用户注册</text>
@@ -76,7 +76,7 @@ export default {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f2;
+  background: #fff9e8;
   padding: 24rpx;
 }
 
@@ -95,12 +95,14 @@ export default {
 }
 
 .input {
-  border: 1px solid #d4dfd4;
+  border: 1px solid #e1ceff;
   border-radius: 12rpx;
   min-height: 82rpx;
   padding: 0 16rpx;
   margin-top: 12rpx;
   font-size: 28rpx;
+  background: #eefbe8;
+  color: #2d3a2f;
 }
 
 .grid {
@@ -111,7 +113,7 @@ export default {
 
 .main-btn {
   margin-top: 20rpx;
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
   border-radius: 12rpx;
   height: 84rpx;
@@ -133,7 +135,7 @@ export default {
 }
 
 .link {
-  color: #2c7148;
+  color: #7c4dff;
   font-size: 24rpx;
 }
 </style>

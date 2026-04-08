@@ -381,9 +381,35 @@ function ensureAdmin(staff) {
 }
 
 function loginPage(msg) {
-  return `<!doctype html><html><head><meta charset="utf-8"/><title>闂傚倸鍊搁崐鎼佸磹閹间礁纾瑰瀣捣閻棗銆掑锝呬壕濡ょ姷鍋涢ˇ鐢稿极閹剧粯鍋愰柛鎰级閻ゅ嫰姊绘担铏瑰笡闁告棑绠撳畷婊堟晝閳ь剟鍩㈤幘缁樺殟闁靛绠戝鍨攽閻樼粯娑ф俊顐ｇ矒閿濈偤鏁冮埀顒勬箒濠电姴锕ら崯鎵矓濞差亝鐓涚€光偓閳ь剟宕伴幘鑸殿潟闁圭儤顨呴～鍛存煟濡櫣锛嶅ù婊冪埣濮婄粯鎷呮笟顖滃姼婵°倗濮甸幃鍌炲箚瀹€鍕＜闁绘劘灏欓悾娲偡濠婂懎顣奸悽顖涘浮閹瑦绻濋崘锔跨盎闂婎偄娲﹂幐鎼侇敂椤愶絾鍙忛柨婵嗗暙閻忣喚绱?/title><style>body{font-family:Arial;background:#f2f6f2;display:flex;min-height:100vh;align-items:center;justify-content:center}.c{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);width:320px}input,button{width:100%;padding:10px;margin-top:10px;box-sizing:border-box}button{background:#2c7148;color:#fff;border:none}.e{color:#b3261e;font-size:13px;margin-top:8px}</style></head><body><div class="c"><h3>闂傚倸鍊搁崐鎼佸磹閹间礁纾瑰瀣捣閻棗銆掑锝呬壕濡ょ姷鍋涢ˇ鐢稿极閹剧粯鍋愰柛鎰级閻ゅ嫰姊绘担铏瑰笡闁告棑绠撳畷婊堟晝閳ь剟鍩㈤幘缁樺殟闁靛绠戝鍨攽閻樼粯娑ф俊顐ｇ矒閿濈偤鏁冮埀顒勬箒濠电姴锕ら崯鎵矓濞差亝鐓涚€光偓閳ь剟宕伴幘鑸殿潟闁圭儤顨呴～鍛存煟濡櫣锛嶅ù婊冪埣濮婄粯鎷呮笟顖滃姼婵°倗濮甸幃鍌炲箚瀹€鍕＜闁绘劘灏欓悾娲偡濠婂懎顣奸悽顖涘浮閹瑦绻濋崘锔跨盎闂婎偄娲﹂幐鎼侇敂椤愶絾鍙忛柨婵嗗暙閻忣喚绱?/h3><form method="post" action="/admin/login"><input name="username" placeholder="闂傚倸鍊搁崐鎼佸磹閹间礁纾归柣鎴ｅГ閸婂潡鏌ㄩ弴妤€浜惧銈庝簻閸熸潙鐣疯ぐ鎺濇晪闁告侗鍨版慨娲⒒娴ｄ警娼掗柛鏇炵仛閻ｅ墎绱撴担鎻掍壕婵犮垼娉涙径鍥磻閹捐崵宓侀柛顭戝枛婵骸顪冮妶蹇撶槣闁搞劏娉涢锝嗗閺夋嚦銊╂煥閺傚灝鈷旀い鏃€娲熷娲偡閹殿喗鎲奸梺鑽ゅ枂閸庣敻骞冨鈧崺锟犲川椤旈棿鐢?/><input type="password" name="password" placeholder="闂傚倸鍊搁崐鎼佸磹瀹勬噴褰掑炊椤掑鏅悷婊勬瀵粯绻濋崶銊︽珳闂佸憡绮堥懗鍫曞礉閻戣姤鍋℃繝濠傚暟鍟搁梺璇茬箰椤戝懘鍩為幋锔藉€烽柡澶嬪灩娴犙囨⒑閹肩偛濡芥俊鐐舵閻?/><button>闂傚倸鍊搁崐鎼佸磹閹间礁纾圭€瑰嫭鍣磋ぐ鎺戠倞妞ゆ帊绀侀崜顓烆渻閵堝棗濮х紒鐘冲灴閻涱噣濮€閵堝棛鍘撻柡澶屽仦婢瑰棝宕濆鍡愪簻闁哄倸鐏濋顐ょ磼?/button></form>${msg ? `<div class="e">${escapeHtml(msg)}</div>` : ""}<div style="font-size:12px;color:#666;margin-top:8px">admin/123456, operator/op123456</div></div></body></html>`;
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>后台登录</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f2f6f2;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
+    .c{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);width:340px}
+    input,button{width:100%;padding:10px;margin-top:10px;box-sizing:border-box}
+    button{background:#2c7148;color:#fff;border:none;border-radius:6px;cursor:pointer}
+    .e{color:#b3261e;font-size:13px;margin-top:8px}
+    .h{font-size:12px;color:#666;margin-top:8px;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="c">
+    <h3>后台登录</h3>
+    <form method="post" action="/admin/login">
+      <input name="username" placeholder="用户名" />
+      <input type="password" name="password" placeholder="密码" />
+      <button type="submit">登录</button>
+    </form>
+    ${msg ? `<div class="e">${escapeHtml(msg)}</div>` : ""}
+    <div class="h">管理员：admin / 123456<br/>客服：operator / op123456</div>
+  </div>
+</body>
+</html>`;
 }
-
 function dashboardPage(staff, users, payments, tab, q, msg) {
   const query = escapeHtml(q || "");
   const userRows = users
@@ -400,10 +426,28 @@ function dashboardPage(staff, users, payments, tab, q, msg) {
   return `<!doctype html><html><head><meta charset="utf-8"/><title>Admin</title><style>body{margin:0;font-family:Arial;background:#f5f7f5}.layout{display:flex;min-height:100vh}.side{width:220px;background:#1f4a32;color:#fff;padding:12px}.side a{display:block;color:#e3efe5;text-decoration:none;padding:9px;border-radius:6px}.side a.active{background:#2c7148}.main{flex:1;padding:14px}.top{background:#fff;padding:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center}form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}input{padding:8px}button{padding:8px;background:#2c7148;color:#fff;border:none;border-radius:4px}table{width:100%;border-collapse:collapse;background:#fff}td,th{border:1px solid #e6ece6;padding:8px;vertical-align:top}th{background:#eef4ee}.msg{color:#2c7148;margin:8px 0}</style></head><body><div class="layout"><aside class="side"><h3>Admin</h3><a class="${tab === "users" ? "active" : ""}" href="/admin?tab=users&q=${encodeURIComponent(q || "")}">Users</a><a class="${tab === "payments" ? "active" : ""}" href="/admin?tab=payments&q=${encodeURIComponent(q || "")}">Payments</a></aside><main class="main"><div class="top"><div>${escapeHtml(staff.displayName)} (${escapeHtml(staff.role)})</div><form method="post" action="/admin/logout"><button>Logout</button></form></div><form method="get" action="/admin"><input type="hidden" name="tab" value="${escapeHtml(tab)}"/><input name="q" value="${query}" placeholder="Search by account/phone/name"/><button>Search</button><a style="line-height:34px" href="/admin?tab=${escapeHtml(tab)}">Clear</a></form>${msg ? `<div class="msg">${escapeHtml(msg)}</div>` : ""}${body}</main></div></body></html>`;
 }
 function reportPage(staff, user, report) {
-  if (!report) return "<h3>闂傚倸鍊搁崐鎼佸磹閹间礁纾归柣鎴ｅГ閸ゅ嫰鏌涢锝嗙８闁逞屽厸閻掞妇鎹㈠┑瀣妞ゆ挾濯Σ鍗炩攽閻愬瓨缍戦柛姘儏椤洤鈻庨幋婵愭闂佺鍕垫畷闁抽攱鍨堕妵鍕箳閸℃ぞ澹曠紓鍌欑椤︻垶顢氶鐘插灊濠电姵纰嶉崑鍕煕韫囨艾浜归柛妯绘崌濮婅櫣鈧湱濮甸妴鍐磼閳ь剚绗熼埀顒€顕ｉ幎鑺ュ亜闁稿繗鍋愰崢鎾剁磽閸屾瑧鍔嶉拑閬嶆煃闁垮娴柡灞界Х椤т線鏌涢幘瀵告噮缂侇喛顕ч鍏煎緞婵犲嫸绱甸梻鍌欑贰閸撴瑧绮旂€靛摜涓嶉柣妯肩帛閻撴瑩鏌ｅΔ鈧悧濠勬閼碱剛纾奸柣妯挎珪閵囨繈鏌″畝瀣埌閾伙綁鏌ゅù瀣珔缂佹绻濆?/h3><a href='/admin'>闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾妤犵偞鐗犻、鏇氱秴闁搞儺鍓﹂弫鍐煥閺囨浜鹃梺姹囧€楅崑鎾舵崲濠靛洨绡€闁稿本绮岄。娲⒑閽樺鏆熼柛鐘崇墵瀵寮撮悢铏诡啎闂佸壊鐓堥崰鏍ㄧ珶?/a>";
-  return `<!doctype html><html><head><meta charset="utf-8"/><title>闂傚倸鍊搁崐鎼佸磹閹间礁纾归柣鎴ｅГ閸ゅ嫰鏌涢锝嗙８闁逞屽厸閻掞妇鎹㈠┑瀣妞ゆ挾濯Σ鍗炩攽閻愬瓨缍戦柛姘儏椤洤鈻庨幋婵愭闂佺鍕垫畷闁抽攱鍨堕妵鍕箳閸℃ぞ澹曠紓鍌欑椤︻垶顢氶鐘插灊濠电姵纰嶉崑鍕煕韫囨艾浜归柛娆忔閳规垿鎮欓弶鎴犱桓闂佹寧纰嶉妵鍕疀閿濆嫰鍋楅梺璇″枟椤ㄥ懘锝炲┑瀣垫晣闁绘劕寮堕幊娆撴⒒娴ｅ憡鎯堥悶姘煎亰瀹曟繈骞嬪┑鎰濡炪倖娲嶉崑鎾垛偓瑙勬礀閻栧ジ鍨鹃敃鍌氱闁绘垵妫欓ˉ澶愭⒒?/title><style>body{font-family:Arial;background:#f5f7f5;padding:16px}pre{background:#111;color:#daf1df;padding:12px;border-radius:8px;overflow:auto}a{color:#2c7148}</style></head><body><a href="/admin">闂傚倸鍊搁崐鎼佸磹妞嬪海鐭嗗〒姘ｅ亾妤犵偞鐗犻、鏇氱秴闁搞儺鍓﹂弫鍐煥閺囨浜鹃梺姹囧€楅崑鎾舵崲濠靛洨绡€闁稿本绮岄。娲⒑閽樺鏆熼柛鐘崇墵瀵寮撮悢铏诡啎闂佸壊鐓堥崰鏍ㄧ珶閸曨偀鏀介柣鎰级閳绘洖霉濠婂嫮鐭掔€规洘锕㈤崺鈧い鎺嗗亾妞ゎ亜鍟存俊鍫曞幢濡儤娈梻浣侯焾椤戝洦鎱ㄦィ鍏熺兘宕掗悙绮规嫽婵炶揪绲肩拃锕傚绩娴煎瓨鐓曢悗锝庡亜婵鏌熼璇插祮濠碉紕鍏橀崺鈩冩媴閸濆嫬袝濠碉紕鍋戦崐鏍暜婵犲嫮鐭嗗〒姘ｅ亾闁糕斂鍨藉鎾閿涘嫬骞?/a><h3>闂傚倸鍊搁崐鎼佸磹閹间礁纾归柣鎴ｅГ閸ゅ嫰鏌涢锝嗙８闁逞屽厸閻掞妇鎹㈠┑瀣妞ゆ挾濯Σ鍗炩攽閻愬瓨缍戦柛姘儏椤洤鈻庨幋婵愭闂佺鍕垫畷闁抽攱鍨堕妵鍕箳閸℃ぞ澹曠紓鍌欑椤︻垶顢氶鐘插灊?${escapeHtml(report.id)}</h3><div>闂傚倸鍊搁崐鎼佸磹閹间礁纾瑰瀣捣閻棗銆掑锝呬壕濡ょ姷鍋為悧鐘汇€侀弴銏犖ч柛鈩冦仦缁剝淇婇悙顏勨偓鏍礉瑜忕划濠氬箣閻樺樊妫滈梺绉嗗嫷娈曢柣鎾存礋閺岀喖鏌囬敃鈧悘閬嶆煕閵堝拋鍎旈柡灞诲€濆鍫曞箰鎼粹€叉樊闂備礁鎼張顒傜矙閹达箑鐓″鑸靛姇绾偓闂佺粯鍔曢顓熺閻愵兛绻? ${escapeHtml(staff.username)} (${escapeHtml(staff.role)})</div><div>闂傚倸鍊搁崐鎼佸磹閹间礁纾归柣鎴ｅГ閸婂潡鏌ㄩ弴妤€浜惧銈庝簻閸熸潙鐣疯ぐ鎺濇晪闁告侗鍨版慨娲⒒娴ｄ警娼掗柛鏇炵仛閻ｅ墎绱撴担鎻掍壕婵犮垼娉涙径鍥磻閹捐崵宓侀柛顭戝枛婵骸顪冮妶蹇撶槣闁搞劏娉涢? ${escapeHtml(user.name)} (${escapeHtml(user.account)}) ${escapeHtml(user.phone)}</div><pre>${escapeHtml(JSON.stringify(report, null, 2))}</pre></body></html>`;
+  if (!report) return "<h3>Report not found</h3><a href='/admin'>Back</a>";
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Report Detail</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f5f7f5;padding:16px}
+    pre{background:#111;color:#daf1df;padding:12px;border-radius:8px;overflow:auto}
+    a{color:#2c7148}
+  </style>
+</head>
+<body>
+  <a href="/admin">Back to Admin</a>
+  <h3>Report ${escapeHtml(report.id)}</h3>
+  <div>Viewer: ${escapeHtml(staff.username)} (${escapeHtml(staff.role)})</div>
+  <div>User: ${escapeHtml(user.name)} (${escapeHtml(user.account)}) ${escapeHtml(user.phone)}</div>
+  <pre>${escapeHtml(JSON.stringify(report, null, 2))}</pre>
+</body>
+</html>`;
 }
-
 function sanitizeUser(u) {
   return { id: u.id, account: u.account, phone: u.phone, name: u.name, gender: u.gender, age: u.age, latestAssessmentDate: u.latestAssessmentDate || "" };
 }
@@ -1119,3 +1163,4 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`AI TCM backend listening on http://127.0.0.1:${PORT}`);
 });
+

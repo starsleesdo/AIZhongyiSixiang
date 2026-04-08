@@ -33,7 +33,7 @@
     {
       "path": "pages/settings/index",
       "style": {
-        "navigationBarTitleText": "AI 模型设置"
+        "navigationBarTitleText": "模型设置"
       }
     },
     {
@@ -54,6 +54,8 @@
     "selectedColor": "#2c7148",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
+    "fontSize": "16px",
+    "selectedFontSize": "17px",
     "list": [
       {
         "pagePath": "pages/index/index",

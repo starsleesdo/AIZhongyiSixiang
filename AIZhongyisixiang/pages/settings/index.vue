@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="card">
       <text class="title">后端服务地址</text>
@@ -12,30 +12,30 @@
         <view class="picker">{{ providerLabels[selectedProviderIndex] }}</view>
       </picker>
 
-      <text class="label">API Base URL</text>
+      <text class="label">模型接口地址</text>
       <input v-model="form.baseUrl" class="input" placeholder="OpenAI 兼容接口地址" />
 
-      <text class="label">Model</text>
+      <text class="label">模型名称</text>
       <input v-model="form.model" class="input" placeholder="例如 deepseek-chat" />
 
-      <text class="label">API Key</text>
+      <text class="label">接口密钥</text>
       <input
         v-model="form.apiKey"
         class="input"
         :password="!showKey"
-        placeholder="请输入 API Key"
+        placeholder="请输入接口密钥"
       />
       <view class="row">
         <switch :checked="showKey" @change="onToggleKeyVisible" />
-        <text class="row-label">显示 API Key</text>
+        <text class="row-label">显示接口密钥</text>
       </view>
       <text class="tip">你可以配置 DeepSeek、OpenAI、Qwen、GLM 或自定义兼容接口。</text>
     </view>
 
-    <button class="save-btn" :loading="saving" @click="saveAll">
-      {{ saving ? "保存中..." : "保存配置" }}
-    </button>
-    <button class="test-btn" @click="refreshProviders">刷新后端配置</button>
+      <button class="save-btn" :loading="saving" @click="saveAll">
+        {{ saving ? "保存中..." : "保存配置" }}
+      </button>
+      <button class="test-btn" @click="refreshProviders">刷新后端配置</button>
   </view>
 </template>
 
@@ -61,7 +61,7 @@ export default {
         "OpenAI",
         "Qwen(通义)",
         "GLM(智谱)",
-        "Custom"
+        "自定义"
       ],
       providerConfigs: {},
       selectedProviderIndex: 0,
@@ -135,7 +135,7 @@ export default {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f2;
+  background: #fff9e8;
   padding: 20rpx;
 }
 
@@ -163,13 +163,14 @@ export default {
 .input,
 .picker {
   margin-top: 10rpx;
-  border: 1px solid #dbe3da;
+  border: 1px solid #e1ceff;
   border-radius: 12rpx;
   min-height: 78rpx;
   padding: 0 18rpx;
   line-height: 78rpx;
   font-size: 26rpx;
-  background: #fff;
+  background: #eefbe8;
+  color: #2d3a2f;
 }
 
 .tip {
@@ -201,13 +202,16 @@ export default {
 }
 
 .save-btn {
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
 }
 
 .test-btn {
   background: #fff;
-  color: #2c7148;
-  border: 1px solid #c7d8cc;
+  color: #7c4dff;
+  border: 1px solid #ceb5ff;
 }
 </style>
+
+
+

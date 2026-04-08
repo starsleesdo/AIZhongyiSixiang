@@ -1,4 +1,9 @@
 import { getDefaultReport } from "./default-report";
+import {
+  buildInquirySummary,
+  getDefaultInquiryAnswers,
+  normalizeInquiryAnswers
+} from "./inquiry-schema";
 
 const STORAGE_LATEST = "latest_report";
 const STORAGE_HISTORY = "report_history";
@@ -33,9 +38,51 @@ function ensureReportFields(report, index = 0) {
   if (!Array.isArray(safe.tongue.findings)) {
     safe.tongue.findings = base.tongue.findings;
   }
+
+  safe.inquiry.answers = normalizeInquiryAnswers(
+    safe.inquiry.answers || base.inquiry.answers || getDefaultInquiryAnswers()
+  );
+  if (typeof safe.inquiry.summary !== "string" || !safe.inquiry.summary.trim()) {
+    safe.inquiry.summary = buildInquirySummary(safe.inquiry.answers);
+  }
+
+  if (!Array.isArray(safe.pulse.types)) {
+    safe.pulse.types = Array.isArray(base.pulse.types) ? base.pulse.types : [];
+  }
+  if (typeof safe.pulse.analysis !== "string") {
+    safe.pulse.analysis = String(base.pulse.analysis || "");
+  }
+  if (typeof safe.pulse.pressureSignal !== "string") {
+    safe.pulse.pressureSignal = String(safe.pulse.pressureSignal || "");
+  }
+  if (typeof safe.climate.analysis !== "string") {
+    safe.climate.analysis = String(base.climate.analysis || "");
+  }
+
+  if (safe.climate.birthYear == null) {
+    safe.climate.birthYear = base.climate.birthYear || "";
+  } else {
+    safe.climate.birthYear = String(safe.climate.birthYear);
+  }
+  if (safe.climate.birthMonth == null) {
+    safe.climate.birthMonth = base.climate.birthMonth || "";
+  } else {
+    safe.climate.birthMonth = String(safe.climate.birthMonth);
+  }
+  if (safe.climate.birthDay == null) {
+    safe.climate.birthDay = base.climate.birthDay || "";
+  } else {
+    safe.climate.birthDay = String(safe.climate.birthDay);
+  }
+  if (safe.climate.birthHour == null) {
+    safe.climate.birthHour = base.climate.birthHour || "";
+  } else {
+    safe.climate.birthHour = String(safe.climate.birthHour);
+  }
   if (!Array.isArray(safe.risk.items)) {
     safe.risk.items = base.risk.items;
   }
+
   if (!safe.id) {
     safe.id = `RPT-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   }
@@ -46,6 +93,7 @@ function ensureReportFields(report, index = 0) {
   if (!safe.gender) safe.gender = "男";
   if (!safe.age) safe.age = 26;
   if (typeof safe.score !== "number") safe.score = 72 - index * 4;
+
   return safe;
 }
 

@@ -1,8 +1,9 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="header">
       <text class="title">我的</text>
-      <text class="settings" @click="goSettings">⚙</text>
+      <text v-if="loggedIn" class="api-btn" @click="goSettings">API</text>
+      <text v-else class="settings-placeholder"></text>
     </view>
 
     <view v-if="!loggedIn" class="card">
@@ -69,7 +70,7 @@ import {
   logoutUser,
   clearAuthSession
 } from "../../common/api";
-import { saveReportHistory } from "../../common/report-store";
+import { getLatestReport, saveReportHistory } from "../../common/report-store";
 
 export default {
   data() {
@@ -145,6 +146,12 @@ export default {
       uni.navigateTo({ url: "/pages/auth/register" });
     },
     goLatestReport() {
+      const fromRemote = Array.isArray(this.history) && this.history.length ? this.history[0] : null;
+      const latest = fromRemote || getLatestReport();
+      if (latest && latest.id) {
+        this.openDetail(latest.id);
+        return;
+      }
       uni.switchTab({ url: "/pages/report/index" });
     },
     openDetail(id) {
@@ -165,7 +172,7 @@ export default {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f3;
+  background: #fff9e8;
   padding: calc(var(--status-bar-height) + 16rpx) 20rpx 20rpx;
 }
 
@@ -178,11 +185,25 @@ export default {
 .title {
   font-size: 44rpx;
   font-weight: 700;
-  color: #214f35;
+  color: #5b33cc;
 }
 
-.settings {
-  font-size: 34rpx;
+.api-btn {
+  min-width: 76rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  border-radius: 999rpx;
+  border: 1px solid #e1ceff;
+  color: #5b33cc;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 22rpx;
+  padding: 0 14rpx;
+}
+
+.settings-placeholder {
+  width: 76rpx;
+  height: 48rpx;
 }
 
 .card {
@@ -201,7 +222,7 @@ export default {
   width: 92rpx;
   height: 92rpx;
   border-radius: 50%;
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
   line-height: 92rpx;
   text-align: center;
@@ -242,14 +263,14 @@ export default {
 }
 
 .login-btn {
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
 }
 
 .register-btn {
   background: #fff;
-  color: #2c7148;
-  border: 1px solid #c8d8cc;
+  color: #7c4dff;
+  border: 1px solid #ceb5ff;
 }
 
 .section-title {
@@ -263,7 +284,7 @@ export default {
   padding: 14rpx 0;
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid #eef2ec;
+  border-bottom: 1px solid #eadbff;
   font-size: 28rpx;
   color: #313a31;
 }
@@ -289,7 +310,7 @@ export default {
 .history-item {
   margin-top: 10rpx;
   padding: 14rpx 0;
-  border-bottom: 1px solid #edf2ec;
+  border-bottom: 1px solid #eadbff;
   display: flex;
   justify-content: space-between;
   align-items: center;

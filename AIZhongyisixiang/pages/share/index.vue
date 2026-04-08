@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="header">
       <text class="title">分享 App</text>
@@ -64,7 +64,7 @@ export default {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #eff7f0, #f6f7f4 28%);
+  background: linear-gradient(180deg, #fff2c2, #fff6da 28%);
   padding: calc(var(--status-bar-height) + 16rpx) 20rpx 20rpx;
 }
 
@@ -76,7 +76,7 @@ export default {
   display: block;
   font-size: 42rpx;
   font-weight: 700;
-  color: #205338;
+  color: #5b33cc;
 }
 
 .subtitle {
@@ -97,7 +97,7 @@ export default {
   display: block;
   font-size: 30rpx;
   font-weight: 700;
-  color: #203126;
+  color: #4a2aa8;
 }
 
 .share-grid {
@@ -109,7 +109,7 @@ export default {
 
 .share-item {
   border-radius: 14rpx;
-  background: #f4f8f4;
+  background: #fff5cf;
   padding: 20rpx 10rpx;
   text-align: center;
 }
@@ -120,7 +120,7 @@ export default {
   line-height: 56rpx;
   display: inline-block;
   border-radius: 50%;
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
   font-size: 24rpx;
 }

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="top-row">
       <view class="brand">
@@ -22,7 +22,7 @@
         <text class="grid-title">健康测评</text>
         <text class="grid-subtitle">舌诊 / 问诊 / 五运六气</text>
       </view>
-      <view class="grid-item card" @click="goToReport">
+      <view class="grid-item card" @click="goMyReport">
         <view class="grid-icon gold">报</view>
         <text class="grid-title">我的报告</text>
         <text class="grid-subtitle">查看历史健康报告</text>
@@ -34,7 +34,7 @@
     </button>
 
     <view class="desc card">
-      <text class="desc-title">服务号测评说明</text>
+      <text class="desc-title">服务流程说明</text>
       <view class="desc-row">
         <text class="desc-no no1">1</text>
         <text class="desc-text">舌诊 - 拍摄舌面/舌底照片，AI智能分析舌象</text>
@@ -45,7 +45,7 @@
       </view>
       <view class="desc-row">
         <text class="desc-no no3">3</text>
-        <text class="desc-text">五运六气 - 基于出生时辰推算运气养生方案</text>
+        <text class="desc-text">五运六气 - 基于出生时辰推演运气养生方案</text>
       </view>
     </view>
   </view>
@@ -53,7 +53,7 @@
 
 <script>
 import { generateReport, getAuthUser, getCurrentProvider } from "../../common/api";
-import { prependHistory } from "../../common/report-store";
+import { getLatestReport, prependHistory } from "../../common/report-store";
 
 export default {
   data() {
@@ -71,6 +71,14 @@ export default {
       uni.navigateTo({ url: "/pages/settings/index" });
     },
     goToReport() {
+      uni.switchTab({ url: "/pages/report/index" });
+    },
+    goMyReport() {
+      const latest = getLatestReport();
+      if (latest && latest.id) {
+        uni.navigateTo({ url: `/pages/report/detail?id=${encodeURIComponent(latest.id)}` });
+        return;
+      }
       uni.switchTab({ url: "/pages/report/index" });
     },
     async startAssessment() {
@@ -114,7 +122,7 @@ export default {
 .page {
   min-height: 100vh;
   padding: 22rpx 26rpx 40rpx;
-  background: #f3f4f2;
+  background: #fff9e8;
 }
 
 .card {
@@ -140,7 +148,7 @@ export default {
   width: 56rpx;
   height: 56rpx;
   border-radius: 16rpx;
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
   line-height: 56rpx;
   text-align: center;
@@ -151,7 +159,7 @@ export default {
 .brand-text {
   font-size: 40rpx;
   font-weight: 700;
-  color: #235538;
+  color: #5b33cc;
 }
 
 .actions {
@@ -208,11 +216,11 @@ export default {
 }
 
 .green {
-  background: #2c7148;
+  background: #7c4dff;
 }
 
 .gold {
-  background: #d6b66f;
+  background: #ffe7a0;
 }
 
 .grid-title {
@@ -230,7 +238,7 @@ export default {
 
 .start-btn {
   margin-top: 28rpx;
-  background: #2c7148;
+  background: #7c4dff;
   color: #fff;
   border-radius: 999rpx;
   font-size: 36rpx;
@@ -275,8 +283,8 @@ export default {
 }
 
 .no3 {
-  color: #4a8456;
-  background: #eaf4ec;
+  color: #7c4dff;
+  background: #efe6ff;
 }
 
 .desc-text {
