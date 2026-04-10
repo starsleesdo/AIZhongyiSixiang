@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="page">
     <scroll-view class="section-tabs" scroll-x>
       <view
@@ -910,3 +910,4 @@ export default {
   font-weight: 700;
 }
 </style>
+

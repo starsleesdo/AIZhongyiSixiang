@@ -58,7 +58,7 @@ export function getDefaultReport() {
       summary: buildInquirySummary(DEFAULT_INQUIRY_ANSWERS)
     },
     pulse: {
-      summary: "暂未接入脉诊设备，可通过问卷和可穿戴设备做替代评估。",
+      summary: "暂未接入脉诊设备，可通过问诊和可穿戴设备做替代评估。",
       frequency: 72,
       pressureSignal: "",
       types: [],
@@ -83,3 +83,4 @@ export function getDefaultReport() {
     }
   };
 }
+

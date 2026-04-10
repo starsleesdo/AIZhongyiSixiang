@@ -1,9 +1,9 @@
 ﻿<template>
   <view class="page">
     <view class="card">
-      <text class="title">后端服务地址</text>
+      <text class="title">登录/注册服务地址</text>
       <input v-model="backendBaseUrl" class="input" placeholder="例如: http://127.0.0.1:3000" />
-      <text class="tip">前端会通过该地址调用 AI 合参后端接口。</text>
+      <text class="tip">仅在“我的”页面进行登录或注册时会请求该地址。</text>
     </view>
 
     <view class="card">
@@ -35,7 +35,7 @@
       <button class="save-btn" :loading="saving" @click="saveAll">
         {{ saving ? "保存中..." : "保存配置" }}
       </button>
-      <button class="test-btn" @click="refreshProviders">刷新后端配置</button>
+      <button class="test-btn" @click="refreshProviders">刷新本地配置</button>
   </view>
 </template>
 
@@ -212,6 +212,5 @@ export default {
   border: 1px solid #ceb5ff;
 }
 </style>
-
 
 

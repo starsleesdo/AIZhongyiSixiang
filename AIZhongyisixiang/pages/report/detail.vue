@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <view class="page">
     <view class="nav">
       <text class="back" @click="goBack">返回</text>
       <text class="title">测评详情</text>
-      <text class="export-nav" @click="exportPdf">{{ exportingPdf ? "导出中" : "导出PDF" }}</text>
+      <text class="export-nav" @click="exportPdf">{{ exportingPdf ? "导出中" : "导出JPG" }}</text>
     </view>
 
     <view class="hero">
@@ -27,7 +27,7 @@
     </view>
 
     <button class="export-btn" :loading="exportingPdf" @click="exportPdf">
-      {{ exportingPdf ? "正在导出..." : "下载PDF到本地" }}
+      {{ exportingPdf ? "正在导出..." : "保存报告图片到相册" }}
     </button>
 
     <scroll-view class="section-tabs" scroll-x>
@@ -150,7 +150,6 @@
 </template>
 
 <script>
-import { PDFDocument } from "pdf-lib";
 import { getLatestReport, getReportById } from "../../common/report-store";
 import { buildTongueAnalysis } from "../../common/tongue-analysis";
 import { buildPulseAnalysis, parsePressureSignal } from "../../common/pulse-analysis";
@@ -267,6 +266,38 @@ export default {
         }
       }
     },
+    sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+    withTimeout(promise, timeoutMs, timeoutMessage) {
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          reject(new Error(timeoutMessage || "操作超时"));
+        }, timeoutMs);
+        Promise.resolve(promise)
+          .then((value) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve(value);
+          })
+          .catch((err) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            reject(err);
+          });
+      });
+    },
+    showExportLoading(title) {
+      uni.showLoading({
+        title: String(title || "正在导出"),
+        mask: true
+      });
+    },
     wrapCanvasText(ctx, text, maxWidth) {
       const content = String(text || "");
       if (!content) return [""];
@@ -286,42 +317,57 @@ export default {
       return lines.length ? lines : [""];
     },
     drawCanvasAsync(ctx) {
-      return new Promise((resolve) => {
-        ctx.draw(false, () => resolve());
-      });
+      return this.withTimeout(
+        new Promise((resolve) => {
+          ctx.draw(false, () => resolve());
+        }),
+        20000,
+        "画布渲染超时"
+      );
     },
     canvasToJpg(width, height) {
-      return new Promise((resolve, reject) => {
-        uni.canvasToTempFilePath(
-          {
-            canvasId: "pdfCanvas",
-            fileType: "jpg",
-            quality: 0.95,
-            width,
-            height,
-            destWidth: width,
-            destHeight: height,
-            success: (res) => resolve(res.tempFilePath),
-            fail: reject
-          },
-          this
+      const convertOnce = () =>
+        this.withTimeout(
+          new Promise((resolve, reject) => {
+            uni.canvasToTempFilePath(
+              {
+                canvasId: "pdfCanvas",
+                fileType: "jpg",
+                quality: 0.95,
+                width,
+                height,
+                destWidth: width,
+                destHeight: height,
+                success: (res) => resolve(res.tempFilePath),
+                fail: reject
+              },
+              this
+            );
+          }),
+          20000,
+          "导出图片超时"
         );
+      return convertOnce().catch(async () => {
+        await this.sleep(120);
+        return convertOnce();
       });
     },
     getImageInfoSafe(src) {
-      return new Promise((resolve) => {
-        if (!src) {
-          resolve(null);
-          return;
-        }
-        uni.getImageInfo({
-          src,
-          success: (res) => resolve(res),
-          fail: () => resolve(null)
-        });
-      });
+      if (!src) return Promise.resolve(null);
+      return this.withTimeout(
+        new Promise((resolve) => {
+          uni.getImageInfo({
+            src,
+            success: (res) => resolve(res),
+            fail: () => resolve(null)
+          });
+        }),
+        10000,
+        "读取图片信息超时"
+      ).catch(() => null);
     },
-    async renderSectionToImage(section) {
+    async renderSectionToImage(section, index, total) {
+      this.showExportLoading(`渲染页面 ${index + 1}/${total}`);
       const width = 1120;
       const estimatedHeight = Math.max(
         1300,
@@ -464,106 +510,92 @@ export default {
         }
       ];
     },
-    readFileAsBase64(path) {
-      return new Promise((resolve, reject) => {
-        plus.io.resolveLocalFileSystemURL(
-          path,
-          (entry) => {
-            entry.file(
-              (file) => {
-                const reader = new plus.io.FileReader();
-                reader.onloadend = (event) => {
-                  const dataUrl = String((event && event.target && event.target.result) || "");
-                  const idx = dataUrl.indexOf(",");
-                  resolve(idx >= 0 ? dataUrl.slice(idx + 1) : dataUrl);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-              },
-              reject
-            );
-          },
-          reject
-        );
-      });
+    saveImageByUni(filePath) {
+      return this.withTimeout(
+        new Promise((resolve, reject) => {
+          uni.saveImageToPhotosAlbum({
+            filePath,
+            success: () => resolve(),
+            fail: reject
+          });
+        }),
+        15000,
+        "保存图片到相册超时"
+      );
     },
-    savePdfBytesToLocal(pdfBytes) {
-      const fileName = `健康测评报告-${this.report.id || Date.now()}.pdf`;
-      return new Promise((resolve, reject) => {
-        plus.io.resolveLocalFileSystemURL(
-          "_doc/",
-          (dirEntry) => {
-            dirEntry.getFile(
-              fileName,
-              { create: true },
-              (fileEntry) => {
-                fileEntry.createWriter(
-                  (writer) => {
-                    writer.onwrite = () => resolve(fileEntry.toLocalURL());
-                    writer.onerror = reject;
-                    writer.write(new Blob([pdfBytes], { type: "application/pdf" }));
-                  },
-                  reject
-                );
-              },
-              reject
-            );
-          },
-          reject
-        );
-      });
+    saveImageByPlusGallery(filePath) {
+      // #ifdef APP-PLUS
+      return this.withTimeout(
+        new Promise((resolve, reject) => {
+          if (typeof plus === "undefined" || !plus.gallery || !plus.gallery.save) {
+            reject(new Error("plus.gallery 不可用"));
+            return;
+          }
+          plus.gallery.save(
+            filePath,
+            () => resolve(),
+            (err) => reject(err || new Error("保存到系统相册失败"))
+          );
+        }),
+        15000,
+        "保存图片到相册超时"
+      );
+      // #endif
+      // #ifndef APP-PLUS
+      return Promise.reject(new Error("当前平台不支持 plus.gallery"));
+      // #endif
+    },
+    async saveImageToAlbum(filePath) {
+      try {
+        await this.saveImageByUni(filePath);
+      } catch (error) {
+        // 在 App 端尝试使用 plus.gallery 作为兜底，提升兼容性
+        await this.saveImageByPlusGallery(filePath);
+      }
     },
     async exportPdf() {
       if (this.exportingPdf) return;
-      if (typeof plus === "undefined") {
-        uni.showToast({ title: "仅APP端支持导出PDF", icon: "none" });
-        return;
-      }
+      // #ifdef APP-PLUS
       this.exportingPdf = true;
       try {
+        this.showExportLoading("准备导出...");
         const sections = this.buildExportSections();
-        const imagePaths = [];
+        let savedCount = 0;
         for (let i = 0; i < sections.length; i += 1) {
-          const path = await this.renderSectionToImage(sections[i]);
-          imagePaths.push(path);
+          const tempPath = await this.renderSectionToImage(sections[i], i, sections.length);
+          await this.saveImageToAlbum(tempPath);
+          savedCount += 1;
         }
-
-        const pdfDoc = await PDFDocument.create();
-        for (let i = 0; i < imagePaths.length; i += 1) {
-          const base64 = await this.readFileAsBase64(imagePaths[i]);
-          const jpgImage = await pdfDoc.embedJpg(base64);
-          const page = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
-          page.drawImage(jpgImage, {
-            x: 0,
-            y: 0,
-            width: jpgImage.width,
-            height: jpgImage.height
-          });
-        }
-        const pdfBytes = await pdfDoc.save();
-        const savedPath = await this.savePdfBytesToLocal(pdfBytes);
-
+        uni.hideLoading();
         uni.showModal({
-          title: "导出成功",
-          content: `已保存到本地：${savedPath}`,
+          title: "保存成功",
+          content: `已保存 ${savedCount} 张报告图片到系统相册`,
           showCancel: false
         });
-
-        if (plus.runtime && plus.runtime.openFile) {
-          const openPath =
-            String(savedPath).indexOf("_doc/") === 0
-              ? plus.io.convertLocalFileSystemURL(savedPath)
-              : savedPath;
-          plus.runtime.openFile(openPath);
-        }
       } catch (error) {
-        uni.showToast({
-          title: (error && error.message) || "导出失败",
-          icon: "none"
-        });
+        console.error("export images failed:", error);
+        uni.hideLoading();
+        const msg = String((error && (error.errMsg || error.message)) || "");
+        if (msg.includes("auth deny") || msg.includes("authorize")) {
+          uni.showModal({
+            title: "无相册权限",
+            content: "请在系统设置中允许应用访问相册后重试。",
+            showCancel: false
+          });
+        } else {
+          uni.showToast({
+            title: "保存失败，请检查相册权限",
+            icon: "none"
+          });
+        }
       } finally {
+        uni.hideLoading();
         this.exportingPdf = false;
       }
+      // #endif
+      // #ifndef APP-PLUS
+      uni.showToast({ title: "请在手机App端使用该功能", icon: "none" });
+      // #endif
     }
   }
 };
@@ -896,3 +928,4 @@ export default {
   opacity: 0;
 }
 </style>
+

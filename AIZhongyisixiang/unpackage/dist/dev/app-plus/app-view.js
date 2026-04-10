@@ -3765,7 +3765,7 @@ var render = function () {
           _c(
             "v-uni-text",
             { staticClass: _vm._$g(2, "sc"), attrs: { _i: 2 } },
-            [_vm._v("后端服务地址")]
+            [_vm._v("登录/注册服务地址")]
           ),
           _c("v-uni-input", {
             staticClass: _vm._$g(3, "sc"),
@@ -3781,7 +3781,7 @@ var render = function () {
           _c(
             "v-uni-text",
             { staticClass: _vm._$g(4, "sc"), attrs: { _i: 4 } },
-            [_vm._v("前端会通过该地址调用 AI 合参后端接口。")]
+            [_vm._v("仅在“我的”页面进行登录或注册时会请求该地址。")]
           ),
         ],
         1
@@ -3922,7 +3922,7 @@ var render = function () {
             },
           },
         },
-        [_vm._v("刷新后端配置")]
+        [_vm._v("刷新本地配置")]
       ),
     ],
     1
